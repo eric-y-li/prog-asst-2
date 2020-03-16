@@ -1,4 +1,4 @@
-import java.util.Arrays;
+import java.util.*;
 
 public class strassen {
 
@@ -56,27 +56,73 @@ public class strassen {
         return res;
     }
 
+    public static int[][] combineMatrices (int[][] topleft, int[][] topright, int[][] botleft, int[][] botright) {
+        int dim = topleft.length;
+        int newDim = 2 * dim;
+        int[][] res = new int[newDim][newDim];
+        for (int i = 0; i < dim; i++) {
+            for (int j = 0; j < dim; j++) {
+                res[i][j] = topleft[i][j];
+                res[i+dim][j] = topright[i][j];
+                res[i][j+dim] = botleft[i][j];
+                res[i+dim][j+dim] = botright[i][j];
+            }
+        }
+        return res;
+    }
+
     public static int[][] strassenMult (int[][] m1, int[][] m2) {
-        int n = m1.length;
+        if (m1.length <= 2) {
+            return matrixMult(m1, m2);
+        }
+
+        int n = m1.length+1;
+
         int[][] A = subMatrix(m1, 0, (n-1)/2, 0, (n-1)/2);
         int[][] B = subMatrix(m1, 0, (n-1)/2, (n+1)/2, n-1);
         int[][] C = subMatrix(m1, (n+1)/2, n-1, 0, (n-1)/2);
         int[][] D = subMatrix(m1, (n+1)/2, n-1, (n+1)/2, n-1);
+
         int[][] E = subMatrix(m2, 0, (n-1)/2, 0, (n-1)/2);
         int[][] F = subMatrix(m2, 0, (n-1)/2, (n+1)/2, n-1);
         int[][] G = subMatrix(m2, (n+1)/2, n-1, 0, (n-1)/2);
         int[][] H = subMatrix(m2, (n+1)/2, n-1, (n+1)/2, n-1);
 
-        return A;
+        int[][] P1 = strassenMult(F, matrixScale(H, -1));
+        int[][] P2 = strassenMult(matrixAdd(A, B), H);
+        int[][] P3 = strassenMult(matrixAdd(C, D), E);
+        int[][] P4 = strassenMult(D, matrixAdd(G, matrixScale(E, -1)));
+        int[][] P5 = strassenMult(matrixAdd(A, D), matrixAdd(E, H));
+        int[][] P6 = strassenMult(matrixAdd(B, matrixScale(D, -1)), matrixAdd(G, H));
+        int[][] P7 = strassenMult(matrixAdd(A, matrixScale(C, -1)), matrixAdd(E, F));
+
+        int[][] topleft = matrixAdd(P5, matrixAdd(P4, matrixAdd(matrixScale(P2, -1), P6)));
+        int[][] topright = matrixAdd(P1, P2);
+        int[][] botleft = matrixAdd(P3, P4);
+        int[][] botright = matrixAdd(P5, matrixAdd(P1, matrixScale(matrixAdd(P3, P7), -1)));
+
+        return combineMatrices(topleft, topright, botleft, botright);
+    }
+
+    public static int[][] generateMatrix(int dim) {
+        Random rnd = new Random();
+        int[][] m = new int[dim][dim];
+        for (int i = 0; i < dim; i++) {
+            for (int j = 0; j < dim; j++) {
+                m[i][j] = rnd.nextInt(2);
+            }
+        }
+        return m;
     }
 
     public static void main(String[] args) {
         int[][] m = {{1,1,1,1},{2,0,2,4},{0,1,0,3},{1,0,0,1}};
         int[][] prod = matrixMult(m, m);
+        int[][] prod2 = strassenMult(m, m);
+
         System.out.println(Arrays.deepToString(m));
         System.out.println(Arrays.deepToString(prod));
-
-        System.out.println(Arrays.deepToString(subMatrix(m, 0, 1, 0, 1)));
+        System.out.println(Arrays.deepToString(prod2));
     }
 
 }
