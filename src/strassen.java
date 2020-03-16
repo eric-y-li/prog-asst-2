@@ -76,6 +76,9 @@ public class strassen {
             return matrixMult(m1, m2);
         }
 
+        int orign = m1.length;
+        m1 = pad(orign, m1);
+        m2 = pad(orign, m2);
         int n = m1.length;
 
         int[][] A = subMatrix(m1, 0, (n-1)/2, 0, (n-1)/2);
@@ -101,7 +104,17 @@ public class strassen {
         int[][] botleft = matrixAdd(P3, P4);
         int[][] botright = matrixAdd(P5, matrixAdd(P1, matrixScale(matrixAdd(P3, P7), -1)));
 
-        return combineMatrices(topleft, topright, botleft, botright);
+        int[][] finalMatrix = combineMatrices(topleft, topright, botleft, botright);
+
+        if (n != orign) {
+            int[][] unpad = new int[orign][orign];
+            for (int i = 0; i < orign; i++) {
+                int[] prow = Arrays.copyOf(finalMatrix[i], orign);
+                unpad[i] = prow;
+            }
+            return unpad;
+        }
+        return finalMatrix;
     }
 
     public static int[][] generateMatrix(int dim) {
@@ -111,6 +124,24 @@ public class strassen {
             for (int j = 0; j < dim; j++) {
                 m[i][j] = rnd.nextInt(2);
             }
+        }
+        return m;
+    }
+
+    public static int[][] pad(int dim, int[][] m) {
+        if (dim % 2 == 1) {
+            int [][] newMatrix = new int [dim + 1][dim + 1];
+            int r = 0;
+            for (int[] row : m) {
+                int[] prow = Arrays.copyOf(row, dim + 1);
+                newMatrix[r] = prow;
+                r++;
+
+            }
+            int[] line = new int[dim + 1];
+            Arrays.fill(line, 0);
+            newMatrix[dim] = line;
+            return newMatrix;
         }
         return m;
     }
@@ -128,9 +159,17 @@ public class strassen {
         //System.out.println(Arrays.deepToString(prod));
         //System.out.println(Arrays.deepToString(prod2));
 
-        System.out.println(Arrays.deepToString(randm));
-        System.out.println(Arrays.deepToString(randprod));
-        System.out.println(Arrays.deepToString(randprod2));
+        //System.out.println(Arrays.deepToString(randm));
+        //System.out.println(Arrays.deepToString(randprod));
+        //System.out.println(Arrays.deepToString(randprod2));
+
+        //int[][] r = {{1,1,1},{2,0,2},{0,1,0}};
+        //System.out.println(Arrays.deepToString(pad(3, r)));
+
+        int[][] k = {{1,1,1,1,1},{2,0,2,4,1},{0,1,0,3,1},{1,0,0,1,1}, {2,3,1,4,3}};
+        int[][] prod3 = strassenMult(k, k);
+        System.out.println(Arrays.deepToString(prod3));
+
     }
 
 }
